@@ -1,0 +1,12 @@
+*** Settings ***
+Resource    ../page_objects/login/login_modal.txt
+
+
+*** Keywords ***
+
+
+user clicks sign up from login modal
+    Login Modal - user opens login modal
+    Login Modal - user clicks sign up link
+
+

@@ -1,0 +1,15 @@
+*** Settings ***
+Documentation    FAQ Features
+Suite Setup      Open browser window
+Suite Teardown   Close Browser Window
+
+Resource        ../page_objects/global/language_objects.txt
+Resource        ../step_definitions/faq_steps.txt
+
+*** Test Cases ***
+
+Scenario: check FAQ first question text
+    [Tags]    faq    demo
+    Given User loads FAQ page
+    Then FAQ first question copy is validated - english
+    And FAQ first question copy is validated - korean

@@ -1,0 +1,15 @@
+*** Settings ***
+Resource    ../_test_setup.txt
+
+
+*** Variables ***
+
+${topnav_odk_logo}    jquery=.logo .odk
+
+
+*** Keywords ***
+
+public topnav is loaded
+    Verify Element On Page    ${topnav_odk_logo}
+
+

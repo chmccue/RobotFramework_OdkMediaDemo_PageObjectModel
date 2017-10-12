@@ -1,0 +1,137 @@
+*** Settings ***
+Documentation    This resource file contains global checks shared across all scripts.
+
+Resource    _global_test_setup.txt
+
+
+
+*** Variables ***
+
+
+## ========================================================
+## ASSET BASE URLs
+## ========================================================
+${asset_base_url}     
+## ========================================================
+
+
+@{attr_href_list}     ${EMPTY}
+@{attr_src_list}      ${EMPTY}
+
+&{payload_content}    action=account.validatelogin    reference_data=    reference_type=username    verification_data=    verification_type=password
+
+
+*** Keywords ***
+    
+# ====================
+# ====================
+Global - check specific url element links in HTML    [Arguments]    @{elements}
+    [Documentation]    This keyword takes a javscript/jquery element locator and looks for any href/src attributes that are part of any tags matching that locator. It's more specific than the keyword that searches for all href and src links on the page, and is ideal if you are looking for specific links in the page. It will also cut down the run time due to being more specific with what is being looked for.
+    
+    Global - page has loaded
+    Execute Javascript    window.scrollTo(0,10000)
+    
+    Pull data out of DOM    @{elements}
+    
+    Global - check dynamic list url page statuses
+
+# ====================
+# ====================
+Global - scrape all url links in HTML    [Arguments]    ${GetDataOnly}=False
+    [Documentation]    This will locate all href and src links found in the HTML of the page and compile them into a list. It currently omits javascript files due to issues with different base urls appearing for certain links (5/30/2017). This can be used either as a one off page check or multiple page checks by setting GetDataOnly variable: False will scrape and then fully check links of a single page, True will scrape the page and store them in a list, waiting until the user fully checks the links. This is good for when you want to check multiple pages, as this will store the links for each page, and then as a new page gets scraped, the new links will get added, remove any duplicate links in the existing list, and then continue with the test.
+    
+    Global - page has loaded
+    Execute Javascript    window.scrollTo(0,10000)
+    
+    Pull data out of DOM    [src]
+    
+    Run Keyword If    ${GetDataOnly} == False
+    ...    Global - check dynamic list url page statuses
+
+# ====================
+# ====================
+Pull data out of DOM    [Arguments]    @{elements}
+    
+    :FOR    ${element}    IN    @{elements}
+    \    ${count_element_items}=    Get Variable Count    ${element}
+    \      Run Keyword If    ${count_element_items} > 0
+    \    ...    Global - Create dynamic attribute list url
+    \    ...    ${element}    ${count_element_items}
+
+
+
+
+Global - Create dynamic attribute list url
+    [Arguments]    ${element}    ${item_count}
+    ####################
+    :FOR    ${num}    IN RANGE    0    ${item_count}
+    \    ${href_check}=      Global - get attribute url    ${element}    ${num}
+    \    ${src_check}=       Global - get attribute url    ${element}    ${num}  attr=src
+    \    ${data_src_check}=  Global - get attribute url    ${element}    ${num}  attr=data-src
+    ####################
+    \    Run Keyword If
+    \    ...    "${href_check}" != "${EMPTY}"
+    \    ...    Append To List    ${attr_href_list}    ${href_check}
+    \    Run Keyword If
+    \    ...    "${src_check}" != "${EMPTY}"
+    \    ...    Append To List    ${attr_src_list}    ${src_check}
+    \    Run Keyword If
+    \    ...    "${data_src_check}" != "${EMPTY}"
+    \    ...    Append To List    ${attr_src_list}    ${data_src_check}
+    ####################
+    ${attr_href_list_no_duplicates}=    Remove Duplicates    ${attr_href_list}
+    ${attr_src_list_no_duplicates}=     Remove Duplicates    ${attr_src_list}
+    ####################
+    Set Global Variable    ${attr_href_list}    ${attr_href_list_no_duplicates}
+    Set Global Variable    ${attr_src_list}     ${attr_src_list_no_duplicates}
+    ####################
+    Log    generated href links: ${attr_href_list}\n\n
+    Log    generated src links: ${attr_src_list}\n
+    ####################
+
+Global - get attribute url
+    [Arguments]    ${element}    ${num}=0    ${attr}=href
+    ####################
+    ${get_attr}=    Execute Javascript
+    ...    return ($("${element}:eq(${num})").attr("${attr}"));
+    #removes unneccessary whitespace in front and end of data.
+    ${get_attr_clean}=
+    ...    Run Keyword If    '''${get_attr}''' != '''None''' and '''.js''' not in '''${get_attr}''' and '''javascript''' not in '''${get_attr}'''
+    ...    Strip String    ${get_attr}    ELSE    Set Variable    ${EMPTY}
+    [Return]    ${get_attr_clean}
+    
+
+
+
+Global - check dynamic list url page statuses    [Arguments]    ${base_url}=${TEST_URL}    ${login_check}=True
+    ${attr_href_list_len}=    Run Keyword If    "${attr_href_list}" != "${EMPTY}"
+    ...    Evaluate    len(${attr_href_list})    ELSE    Set Variable    0
+    ${attr_src_list_len}=     Run Keyword If    "${attr_src_list}" != "${EMPTY}"
+    ...    Evaluate    len(${attr_src_list})     ELSE    Set Variable    0
+    ####################
+    Run Keyword If    "${attr_href_list_len}" > "1"
+    ...    Run Keyword And Continue On Failure
+    ...    Global__check dynamic list url page statuses    ${attr_href_list}    ${base_url}    ${login_check}
+    ####################
+    Run Keyword If    "${attr_src_list_len}" > "1"
+    ...    Run Keyword And Continue On Failure
+    ...    Global__check dynamic list url page statuses    ${attr_src_list}    https://sp.ondemandkorea.com    login_check=False
+    ####################
+
+Global__check dynamic list url page statuses    [Arguments]    ${attr_url_list}    ${base_url}=${TEST_URL}    ${login_check}=True
+    
+    Log To Console    Checking compiled URL list of href and src links across the site for any 404 errors or other potential issues. This may take several minutes...
+    ${check_attr_list}=
+    ...    Run Keyword And Return Status    Run Keyword If    ${login_check}
+    ...    check_data_url    ${base_url}    @{attr_url_list}    &{payload_content}
+    ...    ELSE    check_data_url    ${base_url}    @{attr_url_list}    {}
+    # ====================
+    Run Keyword If    ${check_attr_list} == False
+    ...    Run Keyword And Continue On Failure
+    ...    Fail    Look up fail list in check_attr_list above.
+    custom_delete_all_list_items    ${attr_url_list}
+    Log    ${attr_url_list}
+    
+## ============================================
+## ============================================
+

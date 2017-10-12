@@ -1,0 +1,8 @@
+*** Settings ***
+Resource    ../page_objects/global/video_page_objects.txt
+
+
+*** Keywords ***
+
+user is taken to expected video page
+    video page matches selected video

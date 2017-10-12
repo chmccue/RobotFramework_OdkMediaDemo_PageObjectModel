@@ -1,0 +1,38 @@
+*** Settings ***
+Resource    ../_test_setup.txt
+
+*** Variables ***
+
+${video_page_title}    jquery=#title, .title, .text
+
+${video_page_player}    jquery=#player, #odk_player
+
+*** Keywords ***
+
+video page matches selected video
+    Verify Element On Page    ${video_page_player}
+    ${get_page_item}=    Get Text    ${video_page_title}
+
+
+    ${home_popular_eps_regex_esc}=
+    ...    Regexp Escape    ${home_eps_store_name}
+    ${video_page_regex_esc}=
+    ...    Regexp Escape    ${get_page_item}
+    # ===================
+	${page_title_in_product_grid_check}=
+    ...    Run Keyword And Return Status
+    ...    Should Match Regexp    ${home_eps_store_name}    (?i)${video_page_regex_esc}
+
+    ${page_title_in_product_grid_check2}=
+    ...    Run Keyword If    not(${page_title_in_product_grid_check})
+    ...    Run Keyword And Return Status
+    ...    Should Match Regexp    ${get_page_item}    (?i)${home_popular_eps_regex_esc}
+    ...    Product Grid item name ${home_eps_store_name} is not matching Video Page item name ${get_page_item}.
+
+    Run Keyword If    ${page_title_in_product_grid_check} or ${page_title_in_product_grid_check2}
+    ...    Print To Log And Console
+    ...    MATCH: Product Grid item name ${home_eps_store_name} is matching Video Page item name ${get_page_item}.
+    ...    ELSE IF    ${page_title_in_product_grid_check} == False and ${page_title_in_product_grid_check2} == False
+    ...    Fail    FAIL: Product Grid item name ${home_eps_store_name} is not matching Video Page item name ${get_page_item}.
+
+    

@@ -1,0 +1,18 @@
+*** Settings ***
+Documentation    this file contains step definitions for faq page
+Resource        ../page_objects/footer/faq_objects.txt
+Resource        ../page_objects/global/language_objects.txt
+
+
+*** Keywords ***
+
+User loads FAQ page
+    global - language popup - select english
+    FAQ page - load page
+
+FAQ first question copy is validated - english
+    FAQ page - copy check first faq - english
+
+FAQ first question copy is validated - korean
+    global - language menu - select korean
+    FAQ page - copy check first faq - korean

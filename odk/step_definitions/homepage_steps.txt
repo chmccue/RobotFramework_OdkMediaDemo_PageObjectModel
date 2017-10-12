@@ -1,0 +1,25 @@
+*** Settings ***
+Resource    ../page_objects/home/homepage_public.txt
+Resource    ../page_objects/global/language_objects.txt
+
+
+*** Keywords ***
+
+
+user is on public homepage
+    public homepage is loaded
+
+test scrapes page for links and check status codes
+    Global - scrape all url links in HTML    GetDataOnly=True
+    Close browser window
+    Global - check dynamic list url page statuses
+    
+
+
+user selects random popular episodes video
+    public homepage - popular episodes - select random video
+
+user selects random drama episodes video
+    public homepage - drama episodes - select random video
+
+

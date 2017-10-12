@@ -1,0 +1,42 @@
+*** Settings ***
+Resource    ../_test_setup.txt
+
+*** Variables ***
+
+
+${reg_content}    jquery=#registerform
+
+${reg_email}            jquery=#user_login1
+${reg_email_confirm}    jquery=#user_login2
+
+${reg_password}            jquery=[id*='user_pass1']
+${reg_password_confirm}    jquery=[id*='user_pass2']
+
+${user_pw}    pw_test
+
+${reg_bday_mo}    jquery=#month
+${reg_bday_day}    jquery=#day
+${reg_bday_yr}    jquery=#year
+
+*** Keywords ***
+
+user is on Reg page
+    Verify Element On Page    ${reg_content}
+    
+
+reg page - enter email in email field
+    Global Reg - type new email into email field
+reg page - enter email in confirm email field
+    Global Reg - type new email into email field
+    ...    ${reg_email_confirm}    create_new_email=False
+reg page - enter password in password field
+    Input Password    ${reg_password}    ${user_pw}
+reg page - enter password in confirm password field
+    Input Password    ${reg_password_confirm}    ${user_pw}
+
+reg page - fill out birthday fields
+    Select dropdown menu answer    ${reg_bday_mo}
+    Select dropdown menu answer    ${reg_bday_day}
+    Select dropdown menu answer    ${reg_bday_yr}
+
+    Sleep    5

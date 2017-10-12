@@ -1,0 +1,34 @@
+*** Settings ***
+Documentation     Public Homepage Features
+Suite Setup       Open browser window
+
+Test Setup        global - language popup - select english
+Test Teardown     reset browser
+
+Resource          ../step_definitions/homepage_steps.txt
+Resource          ../step_definitions/navigation_steps.txt
+
+
+*** Test Cases ***
+
+Scenario: user can select random popular episode item and validate correct page
+    [Tags]    homepage    demo    navigate
+    Given user is on public homepage
+    When user selects random popular episodes video
+    Then user is taken to expected video page
+    
+Scenario: user can select random drama episode item and validate correct page
+    [Tags]    homepage    demo    navigate
+    Given user is on public homepage
+    When user selects random drama episodes video
+    Then user is taken to expected video page
+    
+    
+
+Scenario: Go to public homepage and check status codes
+    [Tags]    homepage    demo
+    Given user is on public homepage
+    Then test scrapes page for links and check status codes
+    [Teardown]    No Operation
+    
+

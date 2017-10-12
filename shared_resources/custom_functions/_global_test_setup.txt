@@ -1,0 +1,98 @@
+*** Settings ***
+Documentation     This resource file contains objects to setup test
+
+Library     Selenium2Library
+Library     String
+Library     Screenshot
+Library     Collections
+Library     RequestsLibrary
+Library     OperatingSystem
+Library     ImageHorizonLibrary
+Library     GlobalCustomRegex.py
+Library     webscraper/GlobalCustomWebScraper.py
+
+Resource    ../page_objects/registration/register_page.txt
+
+Resource    _global_http_requests.txt
+Resource    _global_element_functions.txt
+Resource    _global_copyreview.txt
+Resource    _global_helper_functions.txt
+
+
+*** Variables ***
+#####################
+# Selenium Settings # #
+#####################
+${browser}        	  gc
+${wait_time}      	  15
+${short_wait_time}    5
+
+
+#############
+# Test Data #
+#############
+
+# =============================================================
+# BROWSER LISTS
+# =============================================================
+${browser_ff_name_list}    ['firefox','ff','Firefox']
+${browser_gc_name_list}    ['googlechrome','chrome','gc','Chrome']
+${browser_ie_name_list}    ['internetexplorer','ie','Ie']
+${browser_sf_name_list}    ['safari']
+${browser_js_name_list}    ['phantomjs']
+
+${browser_ff}       False
+${browser_gc}       False
+${browser_ie}       False
+${browser_sf}       False
+${browser_js}       False
+${browser_other}    False
+# =============================================================
+#
+#
+## ========================================================
+
+${test_url}    http://www.ondemandkorea.com/
+## ========================================================
+## ========================================================
+
+## ========================================================
+
+*** Keywords ***
+
+Custom Open Browser and setup
+	Open Browser    http://duckduckgo.com    ${browser}
+    user loads desktop resolution
+
+Custom reload homepage
+    Go To    ${test_url}
+    Log To Console    \n.
+
+
+Close and reopen browser
+    reset browser
+    Close browser window
+    Open browser window
+    Custom reload homepage
+
+reset browser
+    Delete All Cookies
+    Delete All Cookies
+Close browser window
+    Close All Browsers
+## ==============================================
+## ==============================================
+
+## ***************************************************************
+## RESOLUTION SETTINGS
+## ***************************************************************
+user loads desktop resolution
+    Maximize Browser Window
+##########################################
+
+######################
+### Local Functions ##
+######################
+
+
+

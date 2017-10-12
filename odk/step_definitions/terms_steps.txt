@@ -1,0 +1,18 @@
+*** Settings ***
+Documentation    this file contains step definitions for terms of use page
+Resource        ../page_objects/footer/terms_objects.txt
+Resource        ../page_objects/global/language_objects.txt
+
+
+*** Keywords ***
+
+User loads terms of use page
+    global - language popup - select english
+    Terms of use page - load page
+
+Terms of use copy is validated - english
+    Terms of use page - copy check for terms section 1
+
+Terms of use copy is validated - korean
+    global - language menu - select korean
+    Terms of use page - copy check for terms section 1

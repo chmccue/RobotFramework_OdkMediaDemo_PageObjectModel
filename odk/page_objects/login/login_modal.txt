@@ -1,0 +1,26 @@
+*** Settings ***
+Resource    ../_test_setup.txt
+
+*** Variables ***
+
+${topnav_login_btn}    jquery=#fancybox_login, #login_menu
+
+${login_modal}    jquery=#login-popup
+
+${login_modal_signup_btn}    jquery=#login-popup [href*='signup']
+
+
+
+*** Keywords ***
+
+
+Login Modal - user opens login modal
+    Find and Click Element    ${topnav_login_btn}
+    Verify Element On Page    ${login_modal}
+    Sleep    3  #Sleep added for presentation of demo only.
+    
+
+Login Modal - user clicks sign up link
+    Verify Element On Page    ${login_modal}
+    Find and Click Element    ${login_modal_signup_btn}    element_goneafterclick=True
+

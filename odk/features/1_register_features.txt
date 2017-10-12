@@ -1,0 +1,20 @@
+*** Settings ***
+Documentation     Registration Features
+Suite Setup       Open browser window
+Suite Teardown    Close browser window
+Test Setup        global - language popup - select english
+Test Teardown     reset browser
+
+Resource          ../step_definitions/homepage_steps.txt
+Resource          ../step_definitions/login_steps.txt
+Resource          ../step_definitions/register_steps.txt
+
+
+*** Test Cases ***
+
+Scenario: User opens login modal, selects sign up and fills out registration form
+    [Tags]    reg    demo
+    Given user is on public homepage
+    When user clicks sign up from login modal
+    Then user fills out registration form
+    And scrape registration form page links and check status codes

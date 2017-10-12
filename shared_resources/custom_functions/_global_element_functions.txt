@@ -1,0 +1,240 @@
+*** Settings ***
+Documentation    This resource file contains global element clicks and selections shared across all scripts.
+
+Resource    _global_test_setup.txt
+
+*** Variables ***
+
+*** Keywords ***
+
+Find, Scroll To and Click Element
+    [Arguments]
+    ...    ${element}
+    ...    ${timeout}=${wait_time}
+    ...    ${validate_pagecontainselement}=None
+    ...    ${validate_elementvisible}=None
+    ...    ${element_goneafterclick}=False
+    ...    ${click_delay}=0.5
+    ...    ${scrollNumber}=250
+    [Documentation]
+    ...    >Element waits to be visible and then executes javascript to scroll slightly above
+    ...    the element. This is particularly useful when a top nav overlaps with an element.
+    ...    >>The function then waits half a second before clicking on the element.
+    ...    >Timeout is the amount of time the function waits for the element to be visible.
+    ...    >If validate_pagecontainselement is entered, the function will perform a validation check
+    ...    to ensure the expected element is present in the DOM of the page, but not necessarily visible.
+    ...    >If validate_elementvisible is entered, the function will perform a validation check to 
+    ...    ensure the expected element is present in the DOM of the page and is also visible.
+    # =========================
+    Javascript Scroll Up On Page    ${element}    ${timeout}    scrollUpNumber=${scrollNumber}
+    Sleep    ${click_delay}
+    Find and Click Element
+    ...    ${element}
+    ...    ${timeout}
+    ...    ${validate_pagecontainselement}
+    ...    ${validate_elementvisible}
+    ...    ${element_goneafterclick}
+    # =========================
+    # =========================
+
+Find and Click Element
+    [Arguments]
+    ...    ${element}
+    ...    ${timeout}=${wait_time}
+    ...    ${validate_pagecontainselement}=None
+    ...    ${validate_elementvisible}=None
+    ...    ${element_goneafterclick}=False
+    [Documentation]
+    ...    >Element waits to be visible and then clicks on element.
+    ...    >Timeout is the amount of time the function waits for the element to be visible.
+    ...    >If validate_pagecontainselement is entered, the function will perform a validation check
+    ...    to ensure the expected element is present in the DOM of the page, but not necessarily visible.
+    ...    >If validate_elementvisible is entered, the function will perform a validation check to 
+    ...    ensure the expected element is present in the DOM of the page and is also visible.
+    # =========================
+    Wait Until Element Is Visible    ${element}    ${timeout}
+    Wait Until Keyword Succeeds    2x    1s    Click Element    ${element}
+    # =========================
+    Run Keyword If    "${validate_pagecontainselement}" != "None"
+    ...    Wait Until Page Contains Element    ${validate_pagecontainselement}
+    Run Keyword If    "${validate_elementvisible}" != "None"
+    ...    Verify Element On Page    ${validate_elementvisible}
+    # =========================
+    ${half_timeout}=    Evaluate    ${timeout}/2
+    Log    ${half_timeout}
+    Run Keyword If    ${element_goneafterclick}
+    ...    Wait Until Keyword Succeeds
+    ...    2x    1s    Element gone or not visible    ${element}    timeout=${half_timeout}
+    # =========================
+# ==================================================
+# ==================================================
+# ==================================================
+# ==================================================
+
+Hover Mouse    [Arguments]    ${element}    ${count}=2    ${js_scroll}=False
+    [Documentation]    js_scroll optional function added because FF gecko driver has issues with hovering over elements not physically visible in the browser window. This should scroll to the element first to bring it into view before attempting to mouse over it. 6/24/2017 addition - CMcCue
+    # ==========
+    ${lower_count}=    Evaluate    ${count}-1
+    # ==========
+    Wait Until Keyword Succeeds    2x    2s
+    ...    Wait Until Element Is Visible  ${element}    ${wait_time}
+    # ==========
+    Run Keyword If    ${js_scroll}
+    ...    Javascript Scroll to Element    ${element}
+    ${mouse_over}=    Run Keyword And Return Status
+    ...    Mouse Over    ${element}
+    # ==========
+    Run Keyword If    not(${mouse_over}) and ${lower_count} > 0
+    ...    Hover Mouse    ${element}    count=${lower_count}    js_scroll=True
+
+
+Hover menu and click submenu    [Arguments]    ${main_element}    ${sub_element}
+    Hover Mouse    ${main_element}
+    Find and Click Element    ${sub_element}
+
+    # ====================
+
+# ************************************
+# ************************************
+# ************************************
+# ************************************
+Select dropdown menu answer
+    [Documentation]
+    ...    >"element" is the main menu element that holds the subelements in it.
+    ...    >"option_subelement" is used for counting the number of subelements. It
+    ...    defaults to "option" in the jquery string since that is most commonly used
+    ...    in the HTML.
+    ...    >"select_element_value" can be used if an specific option in the dropdown menu
+    ...    wants to be selected instead of a random one. Since normally we want a random
+    ...    one, this defaults to "None."
+    ...    >"range_start" is used for selecting where to start when randomizing the 
+    ...    subelement selector. Since the "0" subelement is usually a non-selectable 
+    ...    option, this defaults to "1."
+    ...    >"skip_menu_check" is an option that can skip the menu element visual ID check
+    ...    on the page. Normally we want this to make sure it's visible on the page 
+    ...    before we interact with it, however in some cases, the literal menu element 
+    ...    that houses the subelements is overlapped by an invisible element and can cause
+    ...    issues with the automation driver. If this issue arises, setting this to 
+    ...    "True" will skip that check. It defaults to "False."
+    [Arguments]
+    ...    ${element}
+    ...    ${option_subelement}=option
+    ...    ${select_element_value}=None
+    ...    ${range_start}=1
+    ...    ${skip_menu_check}=False
+    # ====================
+    Run Keyword If    ${skip_menu_check} == False
+    ...    Wait Until Element Is Visible    ${element}
+    ${element_count}=    Get variable count    ${element} ${option_subelement}
+    # ====================
+    ${random}=
+    ...    Run Keyword If    ${element_count} > ${range_start}
+    ...    Evaluate
+    ...    random.randint(${range_start}, (${element_count}-1))    random
+    ...    ELSE    Evaluate    ${element_count}-1
+    #random.choice(${num_list})    random
+    ${random_int}=
+    ...    Convert To String    ${random}
+    # ====================
+    Run Keyword If    ${element_count} == 0
+    ...    Log To Console    The element you are looking for was not found on the page. The element location may have been changed by the development team or it may have been removed. Check page for more details.
+    ...    ELSE IF
+    ...    '''${select_element_value}'''=='''None''' and '''${element_count}''' > '''0'''
+    ...    Select From List By Index    ${element}    ${random_int}
+    ...    ELSE IF
+    ...    '''${select_element_value}'''!='''None''' and '''${element_count}''' > '''0'''
+    ...    Select From List
+    ...    ${element}    ${select_element_value}
+
+
+# ************************************
+# ************************************
+# ************************************
+# ************************************
+# ************************************
+# ************************************
+
+Verify Element On Page
+    [Arguments]
+    ...    ${element}
+    ...    ${timeout}=${wait_time}
+    # =========================
+    ${half_timeout}=    Evaluate    ${timeout}/2
+    # =========================
+    Wait Until Keyword Succeeds    2x    2s
+    ...    Wait Until Page Contains Element   ${element}    ${half_timeout}
+    Wait Until Element Is Visible      ${element}    ${timeout}
+    Element Should Be Visible          ${element}
+
+# ====================
+# ====================
+# ====================
+# ====================
+
+Element should not be visible or not on page
+    [Arguments]    ${element}
+    ${element_not_on_page}=    Run Keyword And Return Status
+    ...    Page Should Not Contain Element    ${element}
+    Run Keyword If    ${element_not_on_page} == False
+    ...    Element Should Not Be Visible    ${element}
+
+Element gone or not visible
+    [Arguments]    ${element}    ${timeout}=${wait_time}
+    ${elementgone_firstcheck}=
+    ...    Run Keyword And Return Status
+    ...    Wait Until Element Is Not Visible    ${element}    ${timeout}
+    Run Keyword If    '''${elementgone_firstcheck}'''=='''False'''
+    ...    Wait Until Page Does Not Contain Element    ${element}    1
+    # =========================
+
+
+# This function was written because Chrome was having difficulties finding elements on the page,
+# where the element would be just out of the visible browser window.  This scrolls down a little on 
+# the page after inputting the base element that you want to scroll down from.
+Javascript Scroll Down On Page  [Arguments]  ${base element}
+    Wait Until Element Is Visible    ${base element}
+    ${base_element_location}        Get Vertical Position    ${base element}
+    #Log    ${base_element_location}
+    ${converted number}    Convert To Integer    ${base_element_location} 
+    #Log    ${converted number}
+    ${add}    Evaluate    ${converted number} + 5 
+    #Log    ${add}
+    Execute Javascript    return window.scrollTo(0,${add})
+
+Javascript Scroll Up On Page
+    [Arguments]
+    ...    ${base element}
+    ...    ${timeout}=${wait_time}
+    ...    ${scrollUpNumber}=250
+    Wait Until Element Is Visible    ${base element}    ${timeout}
+    ${base_element_location}    Get Vertical Position    ${base element}
+    Log    ${base_element_location}
+    ${converted number}    Convert To Integer  ${base_element_location}
+    Log    ${converted number}
+    ${sub}    Evaluate    ${converted number} - ${scrollUpNumber}
+    Log    ${sub} 
+    Execute Javascript    return window.scrollTo(0,${sub})
+    Sleep	0.1
+ 
+Javascript Scroll to Element    [Arguments]    ${base element}
+     Wait Until Element Is Visible              ${base element}
+    ${base_element_location}    Get Vertical Position    ${base element}
+    Log    ${base_element_location}
+    ${converted number}    Convert To Integer  ${base_element_location}
+    Log    ${converted number}
+    Execute Javascript    return window.scrollTo(0,${converted number})
+
+
+# *************************************************************
+
+Verify Element and set variable    [Arguments]    ${element}
+    #${new_element}=    Remove element variable tag    ${element}
+    ${checkfor_element}=    Run Keyword And Return Status
+    ...    Page Should Contain Element    jquery=${element}
+    
+    Run Keyword If    ${checkfor_element} == True
+    ...    Set Test Variable    ${js_element_to_check}    ${element}
+
+# *************************************************************
+
+

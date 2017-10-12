@@ -1,0 +1,32 @@
+*** Settings ***
+Resource    ../_test_setup.txt
+
+*** Variables ***
+
+${terms_content_loc}    jquery=.termsOfUse
+
+${terms_1_desc_a}    (?msi)1. DESCRIPTION OF SERVICE AND ACCEPTANCE.*?a\\. It is important for YOU \\((“|")subscriber(”|")\\) to follow the terms and conditions described in this ODK Media, Inc. \\((“|")ODK(”|")\\) Terms of Use and the related ODK Privacy Policy\\. By using, visiting, or registering with this site, then each time YOU use any of the ODK Services on any of the Sites, YOU are bound by and have accepted all of the following ODK terms\\.
+${terms_1_desc_b}    (?msi)b\\. ODK provides an online video service comprised of television shows, video clips, text, graphics, logos, photographs, audio works, video works, artwork, and other content \\(collectively, "ODK Content"\\) available on the www.ondemandkorea.com website \\("ODK"\\)\\. Our video service, including the ODK Content and the ODK video player, and any other features, applications, materials or other services offered from time to time by ODK in connection with its business on any of the Sites are referred to collectively as the "ODK Services\\."
+${terms_1_desc_c}    c\\. ODK is not a producer \\(primary or secondary\\) of any and all of the sexually explicit photo and video content found on this website\\. With respect to such content, ODK believes that all visual depictions of such content do not include any person under the age of 18 years of age when such depiction was created. All records, if required, as per 18 USC 2257, for any and all content found on this site, should be sought from the producer of the specific content\\.(”|")
+${terms_1_desc_d}    d\\. ODK reserves the right, from time to time to change these Terms of Use in our sole and absolute discretion\\. The most current version of these Terms of Use can be reviewed by clicking on the "Terms of Use" located at the bottom of the pages of the ODK Website\\. The most current version of the Terms of Use will supersede all previous versions\\.
+
+
+
+*** Keywords ***
+
+Terms of use page - load page
+    Go To    ${test_url}/terms-of-use
+    Verify Element On Page    ${terms_content_loc}
+
+Terms of use page - copy check for terms section 1
+    Actual vs Expected Copy regex
+    ...    ${terms_content_loc}
+    ...    ${terms_1_desc_a}
+    ...    ${terms_1_desc_b}
+    ...    ${terms_1_desc_c}
+    ...    ${terms_1_desc_d}
+    
+    Log To Console    Terms Description copy validated on page.
+    Sleep    5  #Sleep added for presentation of demo only.
+
+

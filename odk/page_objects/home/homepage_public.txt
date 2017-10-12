@@ -1,0 +1,94 @@
+*** Settings ***
+Resource    ../_test_setup.txt
+
+
+*** Variables ***
+
+${home_odk_logo}    jquery=.logo .odk
+
+
+${home_popular_eps_content}     jquery=.contents.popular  #.container.contents.p20
+${home_popular_eps_item}        jquery=.bi-popular>img
+${home_popular_eps_title}       jquery=.bi-popular .ep_title
+${home_popular_eps_next_btn}    jquery=.next.popular
+
+
+${home_drama_eps_content}       jquery=.contents.drama
+${home_drama_eps_item}          jquery=[data-category='drama']>a>img
+${home_drama_eps_title}          jquery=[data-category='drama'] .ep_title
+${home_drama_eps_next_btn}      jquery=.next.drama
+
+
+*** Keywords ***
+
+public homepage is loaded
+    Verify Element On Page    ${home_odk_logo}
+
+
+
+
+
+public homepage - scrape and validate links
+    Global - scrape all url links in HTML
+
+
+
+public homepage - popular episodes - select random video
+    global - select random video from list    ${home_popular_eps_item}
+    
+    global - find visible video icon to click
+    ...    ${home_popular_eps_content}    ${home_popular_eps_item}
+    ...    ${home_popular_eps_title}      ${home_popular_eps_next_btn}
+
+public homepage - drama episodes - select random video
+    global - select random video from list    ${home_drama_eps_item}
+    
+    global - find visible video icon to click
+    ...    ${home_drama_eps_content}    ${home_drama_eps_item}
+    ...    ${home_drama_eps_title}      ${home_drama_eps_next_btn}
+
+
+####################
+# LOCAL FUNCTIONS
+####################
+
+
+global - select random video from list
+    [Arguments]    ${videos_to_count}
+    ${count_video_items}=    Get variable count    ${videos_to_count}
+    ${get_random_num}=    Randomizer    ${count_video_items}
+    Set Test Variable    ${get_random_num}    ${get_random_num}
+global - find visible video icon to click
+    [Arguments]    ${content}    ${eps_item}    ${eps_title}
+    ...    ${eps_next_btn}=None    ${count}=10
+
+    ${lower_count}=    Evaluate    ${count} - 1
+    Sleep    .5
+    ${find_item}=    Run Keyword And Return Status
+    ...    Element Should Be Visible    ${eps_item}:eq(${get_random_num})
+    
+    Run Keyword If    ${find_item}
+    ...    Run Keywords
+    ...    public homepage - set video title variable    eps_title=${eps_title}
+    ...    AND    Find, Scroll To and Click Element    ${eps_item}:eq(${get_random_num})    timeout=2    click_delay=2
+    
+    Run Keyword If    ${find_item} == False and ${lower_count} > 0
+    ...    Run Keywords
+    ...    Find, Scroll To and Click Element    ${eps_next_btn}    1
+    ...    AND
+    ...    global - find visible video icon to click
+    ...    ${content}    ${eps_item}    ${eps_title}
+    ...    ${eps_next_btn}    ${lower_count}
+    Run Keyword If    ${find_item} == False and ${lower_count} == 0
+    ...    Fail With Failure Details    Script could not locate selected element during test. Please check manually.
+
+public homepage - set video title variable
+    [Arguments]    ${eps_title}
+    ${get_name}=    Get Text    ${eps_title}:eq(${get_random_num})
+    Set Test Variable    ${home_eps_store_name}    ${get_name}
+
+
+  
+    
+    
+    

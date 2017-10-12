@@ -1,0 +1,8 @@
+*.pyc
+.idea/
+output.xml
+rerun.xml
+*-screenshot*.png
+debug.log
+geckodriver.log
+ghostdriver.log

@@ -1,0 +1,63 @@
+*** Settings ***
+Documentation    This resource file contains global keywords for checking copy across all scripts.
+
+Resource    _global_test_setup.txt
+
+*** Variables ***
+
+## ========================================================
+
+
+*** Keywords ***
+
+# Copy review
+Actual vs Expected Copy regex
+    [Arguments]
+    ...    ${Actual_copy_location}
+    ...    @{Expected_copy_regex}
+
+    Verify Element On Page        ${Actual_copy_location}
+    ${copyloc_case_insensitive}=    Evaluate    "${Actual_copy_location}".lower()
+    ${Actual_copy}=
+    ...    Run Keyword If    '''jquery=''' in '''${copyloc_case_insensitive}'''
+    ...    Get Text    ${Actual_copy_location}
+    ...    ELSE    Set Variable    str(${Actual_copy_location})
+    Log    ${Actual_copy}
+    # ====================
+    :FOR    ${regex}    in    @{Expected_copy_regex}
+    \       ${checked_regex_copy}=    Run Keyword and Return Status
+    \       ...    Should Match Regexp    ${Actual copy}    ${regex}
+    \       ${failed_regex}=    Set Variable If    ${checked_regex_copy} != True    ${regex}
+    \       Exit For Loop If    ${checked_regex_copy} != True
+    Run Keyword If    ${checked_regex_copy} == True
+    ...    Print to Log and console     Pass: '${Actual_copy}' matches '@{Expected_copy_regex}'
+    #...    Log     Pass: '${Actual_copy}' matches '@{Expected_copy_regex}'
+    Run Keyword If    ${checked_regex_copy} != True
+    ...    Run Keyword And Continue On Failure
+    ...    Fail with Failure Details    Fail: '${Actual_copy}' does not match '${failed_regex}'
+
+## ===================================================
+## ===================================================
+
+Copy not present regex
+    [Arguments]
+    ...    ${Actual_copy_location}
+    ...    @{Expected_copy_regex}
+    
+    Verify Element On Page        ${Actual_copy_location}
+    ${Actual_copy}=
+    ...    Run Keyword If    '''jquery=''' in '''${Actual_copy_location}'''
+    ...    Get Text    ${Actual_copy_location}
+    ...    ELSE    Set Variable    str(${Actual_copy_location})
+    Log    ${Actual_copy}
+    # ====================
+    :FOR    ${regex}    in    @{Expected_copy_regex}
+    \       ${checked_regex_copy}=    Run Keyword and Return Status
+    \       ...    Should Not Match Regexp    ${Actual copy}    ${regex}
+    \       Exit For Loop If    ${checked_regex_copy} != True
+    Run Keyword If    ${checked_regex_copy} == True
+    ...    Log     Pass: '${Actual_copy}' does not match '@{Expected_copy_regex}'
+    Run Keyword If    ${checked_regex_copy} != True
+    ...    Run Keyword And Continue On Failure
+    ...    Fail with Failure Details
+    ...    Fail: '${Actual_copy}' is not supposed to match '@{Expected_copy_regex}'

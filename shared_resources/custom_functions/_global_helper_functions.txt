@@ -1,0 +1,185 @@
+*** Settings ***
+Documentation    This resource file contains global helper keywords.
+
+Resource    _global_test_setup.txt
+
+*** Variables ***
+${randomizer}    0
+
+*** Keywords ***
+
+Delete Cookies and pass execution    [Arguments]    ${custom_msg}=Pass Execution keyword has been run and ended the test.
+    Delete All Cookies
+    Delete All Cookies
+    Pass Execution    ${custom_msg}
+## ==============================================
+## ==============================================
+Print to Log and Console    [Arguments]    ${custom_msg}=.
+    Log To Console    ${custom_msg}
+    Log               ${custom_msg}
+# ===================================================
+# ===================================================
+Check location against regex
+    [Arguments]    ${expected_regex_link}
+    ${current_url}=    Log Location
+    Log    ${expected_regex_link}
+    Should Match Regexp    ${current_url}    ${expected_regex_link}
+
+
+Global - page has loaded
+    Wait For Condition    return document.readyState == 'complete'
+
+
+    
+Clear and Type into element
+    [Arguments]
+    ...    ${field location}
+    ...    ${text entry}
+    ...    ${timeout}=${wait_time}
+    ...    ${fast_type_mode}=True
+    ...    ${slow_mode_delay}=0.1
+    [Documentation]    Added an option to type into an element in "slow mode", as there are some cases where the keyword "Input Text" enters text too quickly for certain fields to properly type it. One notable location is in the name fields for the Visa Checkout popup, where sometimes only partial names get entered into it using "Input Text" keyword.
+    Wait Until Element Is Visible         ${field location}    ${timeout}
+    Clear Element Text                    ${field location}
+    Run Keyword If    ${fast_type_mode}
+    ...    Input Text                     ${field location}    ${text entry}
+    ...    ELSE    Clear and Type into element - slow mode    ${field location}    ${text entry}    ${slow_mode_delay}
+Clear and Type into element - slow mode
+    [Arguments]
+    ...    ${field location}
+    ...    ${text entry}
+    ...    ${slow_mode_delay}=0.1
+    [Documentation]    This function is to be used with "Clear and Type into element" function. It can be triggered from that function by passing the optional argument "fast_type_mode=False" along with the field location and text entry arguments.
+    @{text_characters}=    Split String To Characters    ${text entry}
+    :FOR    ${char}    IN    @{text_characters}
+    \    Press Key    ${field location}    ${char}
+    \    Sleep    ${slow_mode_delay}
+    Log    Entered text '${text entry}' into field ${field location}
+    
+Clear and Type into element - secure
+    [Arguments]
+    ...    ${field location}
+    ...    ${text entry}
+    ...    ${timeout}=${wait_time}
+    [Documentation]    Uses Selenium2Library Input Password keyword; does not store entered text in the log file or xml file.
+    Wait Until Element Is Visible         ${field location}    ${timeout}
+    Clear Element Text                    ${field location}
+    Input Password                        ${field location}    ${text entry}
+
+Switch Window, Verify Element on page
+    [Arguments]
+    ...    ${page title}
+    ...    ${element}
+    sleep  5
+    Select Window  title=${page title}
+    Verify Element On Page    ${element}
+    Close Second Window, Switch Back to Main Window
+    
+
+Close Second Window, Switch Back to Main Window
+    Close Window
+    Select Window
+
+# ====================================================================
+# ====================================================================
+
+Javascript Scroll To Bottom of Page
+    ${height}    ${width}=    Get Window Size
+    Execute Javascript    return window.scrollTo(${width},${height})
+
+Javascript Scroll Down Half The Page
+    ${height}    ${width}=    Get Window Size
+    #Log To Console    ${height}
+    ${half height}    Evaluate    ${height} / 2
+    #Log To Console    Half size of windows: ${half height}
+    Execute Javascript    return window.scrollTo(${width},${half height})
+
+Javascript Scroll To Top Of Page    [Arguments]    ${page}=window
+    Run Keyword If    '''${page}''' == '''window'''
+    ...    Execute Javascript    return ${page}.scrollTo(0,0)
+    ...    ELSE    Execute Javascript    return ${page}.scrollTop(0,0)
+    Sleep    0.2
+
+Javascript Scroll Item into view    [Arguments]    ${element}    ${scrollBool}=false
+    [Documentation]    Scrolls item into view using jQuery. ${scrollBool} used for jQuery command; must be a lowercase false or lowercase true. using false will display item towards bottom of page, while true will display item at top of page.
+    ${element_ready}=    Remove element variable tag    ${element}
+    
+    Run Keyword If    '''"''' in '''${element_ready}'''
+    ...    Execute Javascript    $('${element_ready}')[0].scrollIntoView(${scrollBool})
+    ...    ELSE    Execute Javascript    $("${element_ready}")[0].scrollIntoView(${scrollBool})
+    
+Javascript stop page load
+    Execute Javascript    return window.stop();
+
+get vertical position using js
+    [Arguments]    ${element}
+    ${element_ready}=    Remove element variable tag    ${element}
+    
+    ${get_positions}=    Run Keyword If    '''"''' in '''${element_ready}'''
+    ...    Execute Javascript    return $('${element_ready}').position()
+    ...    ELSE    Execute Javascript    return $("${element_ready}").position()
+
+    ${get_vertical_pos}=    Get From Dictionary    ${get_positions}    top
+    [Return]    ${get_vertical_pos}
+
+###############################################
+###############################################
+
+Get variable count    [Arguments]    ${element}
+    [Documentation]    This keyword uses jQuery to count number of elements matching the input locator. It can take jQuery or CSS element argument only.
+    ...    In below example, the element locator jquery=.hello is entered, and 3 elements are found on the page matching that locator:
+    ...    >>>Get variable count    jquery=.hello
+    ...    >>>3
+    ...    Additionally, the function can take bundled element locators, like so:
+    ...    >>>Get variable count    jquery=.hello, .world, #all
+    ...    >>>5
+    ...    The function will separate each bundled locator separated by a comma and count them individually, returning a full count of all matching locators.
+    # ====================
+    ${element_to_count}=
+    ...    Remove element variable tag    ${element}
+    # ====================
+    ${new_element_list}=    Create List
+    ${new_element_list}=    split_string_using_regex    ${element_to_count}
+    ${total_count}=    Set Variable    0
+    # ====================
+    # ====================
+    :FOR    ${locator}    IN    @{new_element_list}
+    \    ${check_element}=    Run Keyword And Return Status
+    \    ...    Page Should Contain Element    jquery=${locator}    loglevel=NONE
+    \    ${count}=    Run Keyword If    ${check_element}
+    \    ...    Execute Javascript    return ($("${locator}").length);
+    \    ...    ELSE    Set Variable    0
+    \    ${total_count}=    Evaluate    ${total_count} + ${count}
+    
+    Set Test Variable    ${var_count}    ${total_count}
+    [Return]    ${total_count}
+    # ====================
+Remove element variable tag
+    [Arguments]    ${element}    ${tag_to_remove}=(jquery|css)=
+    ${removeVarTag}=
+    ...    Remove chars using regex
+    ...    ${element}    chars_to_remove=${tag_to_remove}
+    [Return]    ${removeVarTag}
+
+Remove chars using regex
+    [Arguments]    ${element}    ${chars_to_remove}=(jquery|css)=    ${num_to_remove}=-1
+    ${removeChars}=
+    ...    Replace String Using Regexp
+    ...    ${element}    (?i)${chars_to_remove}    ${EMPTY}    count=${num_to_remove}
+    [Return]    ${removeChars}
+
+Randomizer    [Arguments]    ${set_randomize_num}=2    ${set_test_var}=False
+    [Documentation]    Defaults to selecting 0 or 1 to make random 50/50 decision. Optional argument can be given by providing a different number; if 3 is entered, random decision of 0-2 will be given, etc.
+    ${randomizer}=    Evaluate    random.randint(0,${set_randomize_num}-1)    modules=random
+    Run Keyword If    ${set_test_var} == True
+    ...    Set Test Variable    ${randomizer}    ${randomizer}
+    [Return]    ${randomizer}
+
+## ============================================
+## ============================================
+## ============================================
+## ============================================
+
+
+
+

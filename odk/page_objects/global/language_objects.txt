@@ -1,0 +1,36 @@
+*** Settings ***
+Documentation    This file is for the language pop up
+Resource         ../_test_setup.txt
+Resource         topnav.txt
+
+*** Variables ***
+${lang_popup}            jquery=#language_popup
+${lang_eng_btn}          jquery=#language_popup #english
+${lang_kor_btn}          jquery=#language_popup #korean
+
+
+${lang_togglebox}        jquery=.languageToggleBox
+${lang_togglebox_eng}    jquery=.languageToggleMenu>a[href*='en']
+${lang_togglebox_kor}    jquery=.languageToggleMenu>a[href*='ko']
+
+*** Keywords ***
+
+global - language popup - select english
+    Custom reload homepage
+    public topnav is loaded
+    Verify Element On Page    ${lang_popup}
+    Find and Click Element    ${lang_eng_btn}    element_goneafterclick=True
+
+global - language popup - select korean
+    Custom reload homepage
+    public topnav is loaded
+    Verify Element On Page    ${lang_popup}
+    Find and Click Element    ${lang_eng_btn}    element_goneafterclick=True
+
+
+global - language menu - select english
+    Hover menu and click submenu    ${lang_togglebox}    ${lang_togglebox_eng}
+
+global - language menu - select korean
+    Hover menu and click submenu    ${lang_togglebox}    ${lang_togglebox_kor}
+

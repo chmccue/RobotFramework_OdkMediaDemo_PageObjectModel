@@ -1,0 +1,19 @@
+*** Settings ***
+Resource    ../page_objects/registration/register_page.txt
+
+
+*** Keywords ***
+
+
+user fills out registration form
+    user is on Reg page
+    reg page - enter email in email field
+    reg page - enter email in confirm email field
+    reg page - enter password in password field
+    reg page - enter password in confirm password field
+    reg page - fill out birthday fields
+    
+
+scrape registration form page links and check status codes
+    Global - scrape all url links in HTML
+

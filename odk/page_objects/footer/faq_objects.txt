@@ -1,0 +1,30 @@
+*** Settings ***
+
+
+
+*** Variables ***
+
+${faq_content_loc}    jquery=.faq
+
+
+${faq_q1_buffering_eng}    (?msi)Q\\: Why there is buffering when playing\\?.*?1\\. While watching our shows, you may operate many browsers at the same time. Also downloading files makes buffering even worse\\..*?2\\. In some cases, your internet speed might not keep up with the minimum speed we require\\..*?A. Go to www\\.speedtest\\.net and click ‘Begin Test’
+
+${faq_q1_buffering_kor}    (?msi)Q\\: 영상 플레이시 버퍼링이 왜 생기나요\\?.*?1\\. 첫째, OnDemandKorea에서 영상을 시청하시는 동안 너무 많은 브라우져를 동시에 실행하고 있지 않으신지 확인하셔야 합니다\\. 간혹 다운로딩등의 작업을 동시에 진행하실 경우 버퍼링 발생의 이유가 될 수 있습니다\\..*?2\\. 현재 고객님께서 계신 곳의 인터넷 속도가 저희 OnDemandKorea 영상 플레이에 필요한 최소 속도에 못 미칠 경우 버퍼링이 있을 수 있습니다\\..*?<인터넷 속도 확인 방법>.*?A\\. www\\.speedtest\\.net 으로 가신 후 아래 이미지 \\(빨간박스\\) (“|")Begin Test(”|")를 클릭\\.
+
+
+*** Keywords ***
+
+FAQ page - load page
+    Go To    ${test_url}/faq
+    Verify Element On Page    ${faq_content_loc}
+
+
+FAQ page - copy check first faq - english
+    Actual vs Expected Copy regex
+    ...    ${faq_content_loc}    ${faq_q1_buffering_eng}
+    Sleep    3  #Sleep added for presentation of demo only.
+
+FAQ page - copy check first faq - korean
+    Actual vs Expected Copy regex
+    ...    ${faq_content_loc}    ${faq_q1_buffering_kor}
+    Sleep    5  #Sleep added for presentation of demo only.

@@ -1,0 +1,16 @@
+*** Settings ***
+Documentation    Terms of Use Features
+Suite Setup      Open browser window
+Suite Teardown   Close Browser Window
+Resource        ../page_objects/global/language_objects.txt
+Resource        ../step_definitions/terms_steps.txt
+
+*** Test Cases ***
+
+Scenario: check terms of use legal text
+    [Tags]    terms    demo
+    Given User loads terms of use page
+    Then Terms of use copy is validated - english
+    And Terms of use copy is validated - korean
+
+

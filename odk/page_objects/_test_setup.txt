@@ -1,0 +1,10 @@
+*** Settings ***
+Documentation     This resource file contains objects to setup test
+Resource    ${CURDIR}${/}..${/}..${/}shared_resources/custom_functions/_global_test_setup.txt
+
+*** Variables ***
+
+
+*** Keywords ***
+Open browser window
+    Custom Open Browser and setup
