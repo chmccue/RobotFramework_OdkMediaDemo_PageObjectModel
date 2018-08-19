@@ -1,8 +1,12 @@
 # odk_demo
-Demo for odk, illustrating front end test cases
+Demo for odk, illustrating front end test cases programmed in Robot Framework and Selenium.
 
-* Please note, there is a log and report file of a previously completed demo test run in this repository, to illustrate the files that are generated upon completion of the demo, if you do not want to go through the below steps of installation and running the tests. 
-* To view the log and report properly, you must download them and open them in a web browser, as opening them for viewing in a git repository will usually show them in HTML markup.
+## Log Report Examples:
+![Report Example 1](report/exampleReport1.png)
+![Log Example 1](report/exampleLog1.png)
+![Log Example 2](report/exampleLog2.png)
+
+* Please note, there is a log and report file of a previously completed demo test run in this repository, to illustrate the files that are generated upon completion of the demo.
 
 
 Architecture/layout:
